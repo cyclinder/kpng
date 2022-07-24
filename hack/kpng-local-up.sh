@@ -21,7 +21,7 @@
 : ${KIND:="kindest/node:v1.22.0@sha256:b8bda84bb3a190e6e028b1760d277454a72267a5454b57db34437c34a588d047"}
 : ${IMAGE:="gauravkghildiyal/kpng:latest"}
 : ${PULL:="IfNotPresent"}
-: ${E2E_BACKEND:="nft"}
+: ${E2E_BACKEND:="iptables"}
 : ${CONFIG_MAP_NAME:=kpng}
 : ${SERVICE_ACCOUNT_NAME:=kpng}
 : ${NAMESPACE:=kube-system}
@@ -47,14 +47,18 @@ function build_kpng {
 
 function install_calico {
     ### Cache cni images to avoid rate-limiting
-    docker pull docker.io/calico/kube-controllers:v3.19.1
-    docker pull docker.io/calico/cni:v3.19.1
-    docker pull docker.io/calico/pod2daemon-flexvol:v3.19.1
-    kind load docker-image docker.io/calico/cni:v3.19.1 --name kpng-proxy
-    kind load docker-image docker.io/calico/kube-controllers:v3.19.1 --name kpng-proxy
-    kind load docker-image docker.io/calico/pod2daemon-flexvol:v3.19.1 --name kpng-proxy
+    docker pull docker.m.daocloud.io/calico/kube-controllers:v3.20.2
+    docker pull docker.m.daocloud.io/calico/cni:v3.20.2
+    docker pull docker.m.daocloud.io/calico/pod2daemon-flexvol:v3.20.2
+    docker pull docker.m.daocloud.io/calico/node:v3.20.2
 
-    kubectl apply -f https://raw.githubusercontent.com/jayunit100/k8sprototypes/master/kind/calico.yaml
+    kind load docker-image docker.m.daocloud.io/calico/cni:v3.20.2 --name kpng-proxy
+    kind load docker-image docker.m.daocloud.io/calico/kube-controllers:v3.20.2 --name kpng-proxy
+    kind load docker-image docker.m.daocloud.io/calico/pod2daemon-flexvol:v3.20.2 --name kpng-proxy
+    kind load docker-image docker.m.daocloud.io/calico/node:v3.20.2 --name kpng-proxy
+
+
+    kubectl apply -f calico.yaml
     kubectl -n kube-system set env daemonset/calico-node FELIX_IGNORELOOSERPF=true
     kubectl -n kube-system set env daemonset/calico-node FELIX_XDPENABLED=false
 }
@@ -72,8 +76,8 @@ function install_k8s {
 function install_kpng {
     # substitute it with your changes...
 
-    echo "Applying template"
-    envsubst <kpng-deployment-ds.yaml.tmpl >kpng-deployment-ds.yaml
+    # echo "Applying template"
+    # envsubst <kpng-deployment-ds.yaml.tmpl >kpng-deployment-ds.yaml
 
     kind load docker-image $IMAGE --name kpng-proxy
 

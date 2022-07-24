@@ -11,7 +11,7 @@ run apk add --update --no-cache \
     linux-headers libnl3-dev
 
 # go mod args
-arg GOPROXY
+arg GOPROXY=https://goproxy.cn,direct
 arg GONOSUMDB
 
 # cache dependencies, they don't change as much as the code
